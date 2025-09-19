@@ -127,6 +127,39 @@
             h1 { font-size: 24px; }
             .bio-section.opener { font-size: 20px; }
             .section { margin-bottom: 60px; padding-bottom: 40px; }
+            .bio-text { text-align: justify; }
+            .film-video.single iframe {
+                width: 100%;
+                max-width: none;
+            }
+            .film.no-trailer .film-header-content {
+                display: block;
+            }
+
+            .film.no-trailer .film-photos {
+                order: -1;
+                margin-bottom: 0px;
+            }
+
+            .film.no-trailer .film-header-content {
+                display: flex;
+                flex-direction: column;
+                margin: 0;
+            }
+
+            .film.no-trailer .film-photos.mobile-early {
+                order: -1;
+                margin: 0;
+            }
+
+            .film.no-trailer .film-info {
+                order: 1;
+                margin: 0;
+            }
+
+            .film.no-trailer .film-credits {
+                margin-top: 0;
+            }
         }
     </style>
 </head>
@@ -495,12 +528,14 @@
 
         function createFilmHTML(film) {
             const photoId = `photos-${film.title.replace(/\s+/g, '-').toLowerCase()}`;
-            const videoPlayer = createVideoPlayer(film.url);
+            const trailerPlayer = createVideoPlayer(film.trailer_url);
+            const screenerPlayer = createVideoPlayer(film.screener_url);
 
             return `
-                <div class="film">
+                <div class="film ${!trailerPlayer ? 'no-trailer' : ''}">
                     <div class="film-title">${film.title}</div>
                     <div class="film-year">${film.production_year} • ${film.runtime}</div>
+                    ${trailerPlayer || ''}
                     <div class="film-header-content">
                         <div class="film-info">
                             <div class="film-credits">
@@ -510,9 +545,9 @@
                             </div>
                             <div class="film-text">${film.synopsis}</div>
                         </div>
-                        <div class="film-photos" id="${photoId}"></div>
+                        <div class="film-photos ${!trailerPlayer ? 'mobile-early' : ''}" id="${photoId}"></div>
                     </div>
-                    ${videoPlayer || ''}
+                    ${screenerPlayer || ''}
                 </div>
             `;
         }

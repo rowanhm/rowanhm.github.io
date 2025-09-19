@@ -9,7 +9,7 @@
     "writer": "Rowan Hall Maudslay",
     "cinematographer": "Gabriel Johnson",
     "producer": "Cecile Taylor",
-    "url": ["https://vimeo.com/1120061738"]
+    "trailer_url": ["https://vimeo.com/1120061738"]
   },
   {
     "idx": "magpies_love_mirrors",
@@ -21,7 +21,7 @@
     "writer": "William Bicknell-Found, Noah Geelan, and others",
     "cinematographer": "Ryan Kilbourne",
     "producer": "Sophia Scott",
-    "url": ["https://www.youtube.com/watch?v=RNBpt8uK6PQ", "https://www.youtube.com/watch?v=RVCm3Ln5KBM", "https://www.youtube.com/watch?v=iUiWbd2dDWg", "https://www.youtube.com/watch?v=xkMajWWZiGc"]
+    "screener_url": ["https://www.youtube.com/watch?v=RNBpt8uK6PQ", "https://www.youtube.com/watch?v=RVCm3Ln5KBM", "https://www.youtube.com/watch?v=iUiWbd2dDWg", "https://www.youtube.com/watch?v=xkMajWWZiGc"]
   },
   {
     "idx": "the_tortoise",
@@ -33,7 +33,7 @@
     "writer": "Alannah Lewis",
     "cinematographer": "Rowan Hall Maudslay",
     "producer": "Seth Jordan",
-    "url": ["https://vimeo.com/315744829"]
+    "screener_url": ["https://vimeo.com/315744829"]
   },
   {
     "idx": "lionguard",
@@ -45,7 +45,7 @@
     "writer": "Rowan Hall Maudslay",
     "cinematographer": "Rowan Hall Maudslay",
     "producer": "Noah Geelan",
-    "url": ["https://vimeo.com/276775502"]
+    "screener_url": ["https://vimeo.com/276775502"]
   },
   {
     "idx": "the_forgotten",
