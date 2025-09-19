@@ -3,9 +3,667 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Website</title>
+    <title>Portfolio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 100px 20px 40px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); padding: 20px 0; text-align: center; z-index: 1000; }
+        nav.scrolled { background: rgba(255,255,255,0.98); box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        nav a { color: #333; text-decoration: none; margin: 0 30px; font-size: 16px; border-bottom: 2px solid transparent; padding-bottom: 2px; transition: border-color 0.3s; }
+        nav a:hover, nav a.active { border-bottom-color: #333; }
+        .section { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 2px solid #eee; }
+        .section:last-child { border-bottom: none; margin-bottom: 0; }
+        h1 { font-size: 28px; margin-bottom: 30px; font-weight: normal; }
+        .bio-container { display: flex; gap: 40px; align-items: flex-start; margin-bottom: 40px; }
+        .bio-photo { width: 200px; height: 200px; object-fit: cover; flex-shrink: 0; border-radius: 50%; }
+        .bio-text { flex: 1; font-size: 16px; }
+        .bio-section.opener { font-size: 20px; font-weight: 500; margin-bottom: 5px; }
+        .publication { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; line-height: 1.3; }
+        .publication:last-child { border-bottom: none; }
+        .publication-title { font-weight: bold; margin-bottom: 8px; cursor: pointer; color: #333; text-decoration: none; }
+        .publication-title:hover { text-decoration: underline; }
+        .publication-year { color: #666; font-size: 14px; margin-left: 5px; }
+        .publication-authors { color: #666; font-size: 14px; margin-left: 8px; }
+        .publication-venue { color: #888; font-style: italic; font-size: 14px; margin-left: 8px; }
+         { margin-bottom: 50px; padding-bottom: 40px; border-bottom: 1px solid #eee; }
+        .film:last-child { border-bottom: none; }
+        .film-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .film-year { color: #666; font-size: 14px; }
+        .film-credits { color: #666; font-size: 14px; margin: 10px 0; }
+        .film-credits strong { color: #333; }
+        .film-video { margin: 20px 0; }
+        .film-video.single { display: flex; justify-content: center; }
+        .film-video.single iframe {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 80%;
+            max-width: 640px;
+            aspect-ratio: 16/9;
+        }
+        .film-video.grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .film-video.grid iframe {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+        .film-header-content { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin: 10px 0 20px 0; align-items: start; }
+        .film-info { display: flex; flex-direction: column; }
+        .film-photos { position: relative; width: 100%; max-width: 300px; }
+        .photo-carousel { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; border-radius: 8px; background: #f5f5f5; }
+        .film-photo { width: 100%; height: 100%; object-fit: cover; position: absolute; opacity: 0; transition: opacity 0.3s; }
+        .film-photo.active { opacity: 1; }
+        .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 10; }
+        .carousel-nav:hover { background: rgba(0,0,0,0.8); }
+        .carousel-nav.prev { left: 10px; }
+        .carousel-nav.next { right: 10px; }
+        .carousel-indicators { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
+        .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: background 0.3s; }
+        .carousel-dot.active { background: rgba(255,255,255,0.9); }
+        .photo-counter { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; z-index: 10; }
+        .film-text { margin-top: 5px; }
+        .film-text p { font-size: 15px; margin-bottom: 15px; }
+        .loading, .error { text-align: center; color: #666; font-style: italic; padding: 40px 0; }
+        .progress-bar { width: 100%; height: 4px; background: #eee; border-radius: 2px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #333; width: 0%; transition: width 0.3s; }
+        .last-updated { text-align: center; color: #888; font-size: 14px; font-style: italic; margin-top: 0px; padding-top: 20px; }
+        .film-credits {
+            margin-top: 0;
+        }
+        .earlier-films-toggle {
+            margin: 60px 0 0 0;
+            padding: 20px 0 10px 0;
+            border-top: 1px solid #eee;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.3s;
+        }
+        .earlier-films-toggle:hover {
+            color: #666;
+        }
+        .earlier-films-toggle h2 {
+            font-size: 20px;
+            font-weight: normal;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-arrow {
+            transition: transform 0.3s;
+            font-size: 14px;
+        }
+        .toggle-arrow.expanded {
+            transform: rotate(90deg);
+        }
+        .earlier-films {
+            display: none;
+            margin-top: 5px;
+        }
+        .earlier-films.expanded {
+            display: block;
+        }
+        .earlier-films .film {
+            margin-bottom: 50px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+        .earlier-films .film:last-child {
+            border-bottom: none;
+        }
+        @media (max-width: 768px) {
+            body { padding: 90px 15px 20px; }
+            nav { padding: 15px 0; }
+            nav a { margin: 0 15px; font-size: 14px; }
+            .bio-container { flex-direction: column; text-align: center; }
+            .bio-photo { align-self: center; width: 150px; height: 150px; }
+            .film-header-content { grid-template-columns: 1fr; }
+            .film-photos { max-width: 100%; }
+            h1 { font-size: 24px; }
+            .bio-section.opener { font-size: 20px; }
+            .section { margin-bottom: 60px; padding-bottom: 40px; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World</h1>
+    <nav>
+        <a href="#home" class="nav-link active">Biography</a>
+        <a href="#academic" class="nav-link">Publications</a>
+        <a href="#films" class="nav-link">Filmography</a>
+    </nav>
+
+    <div id="home" class="section">
+        <h1>Biography</h1>
+        <div class="bio-container" id="bio-container">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <div id="academic" class="section">
+        <h1>Research Publications</h1>
+        <div id="publications-container">
+            <div class="loading">Loading publications...</div>
+        </div>
+    </div>
+
+    <div id="films" class="section">
+        <h1>Film Portfolio</h1>
+        <div id="films-container">
+            <div class="loading">Loading films...</div>
+        </div>
+    </div>
+
+    <div class="last-updated">Last Updated: September 18, 2025</div>
+
+    <script>
+        const CACHE_DURATION = 1; // 30 min
+        const CACHE_PREFIX = 'portfolio_';
+        let carouselData = {};
+        let disableScrollNavUpdate = false;
+
+        // Cache functions
+        function setCache(key, data) {
+            try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({data, timestamp: Date.now()})); } catch(e) {}
+        }
+
+        function getCache(key) {
+            try {
+                const cached = localStorage.getItem(CACHE_PREFIX + key);
+                if (!cached) return null;
+                const item = JSON.parse(cached);
+                return Date.now() - item.timestamp > CACHE_DURATION ? null : item.data;
+            } catch(e) { return null; }
+        }
+
+        // Navigation
+        function navigateTo(id, smooth = true) {
+            const el = document.getElementById(id);
+            if (el) {
+                const navHeight = document.querySelector('nav').offsetHeight;
+                window.scrollTo({ top: el.offsetTop - navHeight - 20, behavior: smooth ? 'smooth' : 'instant' });
+                updateNav(id);
+                if (history.replaceState) history.replaceState(null, '', '#' + id);
+            }
+        }
+
+        function updateNav(active) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === '#' + active);
+            });
+        }
+
+        function handleScroll() {
+            const nav = document.querySelector('nav');
+            nav.classList.toggle('scrolled', window.scrollY > 50);
+
+            if (!disableScrollNavUpdate) {
+                const sections = document.querySelectorAll('.section');
+                const scrollPos = window.scrollY + nav.offsetHeight + 50;
+                sections.forEach(section => {
+                    if (scrollPos >= section.offsetTop && scrollPos <= section.offsetTop + section.offsetHeight) {
+                        updateNav(section.id);
+                        if (history.replaceState) history.replaceState(null, '', '#' + section.id);
+                    }
+                });
+            }
+        }
+
+        // Bio
+        async function loadBio() {
+            const cached = getCache('bio');
+            if (cached) return displayBio(cached);
+
+            try {
+                const [bioRes, academiaRes, filmRes] = await Promise.all([
+                    fetch('bio.json'),
+                    fetch('bio/academia.html'),
+                    fetch('bio/film.html')
+                ]);
+
+                const bioData = await bioRes.json();
+                const academiaText = await academiaRes.text();
+                const filmText = await filmRes.text();
+
+                const fullBioData = {
+                    ...bioData,
+                    academia: academiaText,
+                    film: filmText
+                };
+
+                setCache('bio', fullBioData);
+                displayBio(fullBioData);
+            } catch(e) {
+                document.getElementById('bio-container').innerHTML = '<div class="error">Bio data not available.</div>';
+            }
+        }
+
+        function displayBio(data) {
+            document.getElementById('bio-container').innerHTML = `
+                <img src="${data.photo || 'profile.jpg'}" alt="Profile" class="bio-photo" onerror="this.style.display='none'">
+                <div class="bio-text">
+                    <span class="bio-section opener">${data.opening || ''}</span>
+                    <span class="bio-section">${data.academia || ''}</span>
+                    <span class="bio-section">${data.film || ''}</span>
+                </div>
+            `;
+        }
+
+        // Publications
+        async function loadPublications() {
+            const container = document.getElementById('publications-container');
+            const cached = getCache('publications');
+            if (cached) return displayPublications(cached);
+
+            try {
+                const bioRes = await fetch('bio.json');
+                const bio = await bioRes.json();
+                const orcidId = bio.orcid_id;
+
+                if (!orcidId) {
+                    container.innerHTML = '<div class="error">Please add ORCID ID to bio.json</div>';
+                    return;
+                }
+
+                container.innerHTML = '<div class="loading">Loading publications...<div class="progress-bar"><div class="progress-fill" id="progress"></div></div></div>';
+                const progress = document.getElementById('progress');
+
+                const worksRes = await fetch(`https://pub.orcid.org/v3.0/${orcidId}/works`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!worksRes.ok) throw new Error(`ORCID error: ${worksRes.status}`);
+
+                const works = await worksRes.json();
+                progress.style.width = '40%';
+
+                if (!works.group?.length) {
+                    container.innerHTML = '<div class="error">No publications found.</div>';
+                    return;
+                }
+
+                const details = await Promise.all(
+                    works.group.slice(0, 15).map(async group => {
+                        try {
+                            const putCode = group['work-summary'][0]['put-code'];
+                            const res = await fetch(`https://pub.orcid.org/v3.0/${orcidId}/work/${putCode}`, {
+                                headers: { 'Accept': 'application/json' }
+                            });
+                            return res.ok ? res.json() : null;
+                        } catch(e) { return null; }
+                    })
+                );
+
+                progress.style.width = '80%';
+
+                const publications = details.filter(Boolean).map(d => {
+                    const title = d.title?.title?.value || 'Untitled';
+                    const venue = d['journal-title']?.value || '';
+                    const year = d['publication-date']?.year?.value || '';
+                    const contributors = d.contributors;
+
+                    let url = d.url?.value;
+                    if (!url && d['external-ids']?.['external-id']) {
+                        const doi = d['external-ids']['external-id'].find(id => id['external-id-type'] === 'doi');
+                        if (doi) url = `https://doi.org/${doi['external-id-value']}`;
+                    }
+
+                    return { title, venue, year, contributors, url };
+                }).sort((a, b) => (b.year || 0) - (a.year || 0));
+
+                progress.style.width = '100%';
+                setCache('publications', publications);
+                setTimeout(() => displayPublications(publications), 200);
+
+            } catch(e) {
+                container.innerHTML = '<div class="error">Failed to load publications.</div>';
+            }
+        }
+
+        function formatAuthors(contributors, myName = "Rowan Hall Maudslay") {
+            if (!contributors?.contributor) return '';
+
+            const authors = contributors.contributor
+                .map(c => c['credit-name']?.value)
+                .filter(Boolean)
+                .map(author => author.includes(myName) ? `<strong>${author}</strong>` : author);
+
+            if (authors.length <= 1) return authors[0] || '';
+            if (authors.length === 2) return authors.join(' and ');
+            return authors.slice(0, -1).join(', ') + ', and ' + authors[authors.length - 1];
+        }
+
+        function displayPublications(pubs) {
+            const html = pubs.map(pub => {
+                const authors = formatAuthors(pub.contributors);
+                const titleEl = pub.url ?
+                    `<a href="${pub.url}" class="publication-title" target="_blank">${pub.title}</a>` :
+                    `<span class="publication-title">${pub.title}</span>`;
+
+                return `
+                    <div class="publication">
+                        ${titleEl}
+                        ${authors ? `<span class="publication-authors">${authors}</span>` : ''}
+                        ${pub.year ? `<span class="publication-year">(${pub.year})</span>` : ''}
+                        <span class="publication-venue">${pub.venue || ''}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('publications-container').innerHTML = html;
+        }
+
+        // Video player helper
+        function createVideoPlayer(url) {
+            if (!url) return null;
+
+            // Handle array of URLs
+            if (Array.isArray(url)) {
+                if (url.length === 0) return null;
+                if (url.length === 1) {
+                    // Single video - use centered layout
+                    const playerHTML = createSingleVideoEmbed(url[0]);
+                    return playerHTML ? `<div class="film-video single">${playerHTML}</div>` : null;
+                } else {
+                    // Multiple videos - use grid layout
+                    const playerHTMLs = url.map(createSingleVideoEmbed).filter(Boolean);
+                    if (playerHTMLs.length === 0) return null;
+                    return `<div class="film-video grid">${playerHTMLs.join('')}</div>`;
+                }
+            }
+
+            // Handle single URL (backward compatibility)
+            const playerHTML = createSingleVideoEmbed(url);
+            return playerHTML ? `<div class="film-video single">${playerHTML}</div>` : null;
+        }
+
+        function createSingleVideoEmbed(url) {
+            if (!url) return null;
+
+            // YouTube URLs
+            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const youtubeMatch = url.match(youtubeRegex);
+            if (youtubeMatch) {
+                const videoId = youtubeMatch[1];
+                return `
+                    <iframe src="https://www.youtube.com/embed/${videoId}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                    </iframe>
+                `;
+            }
+
+            // Vimeo URLs
+            const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?(?:vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|))(\d+)(?:$|\/|\?)/;
+            const vimeoMatch = url.match(vimeoRegex);
+            if (vimeoMatch) {
+                const videoId = vimeoMatch[1];
+                return `
+                    <iframe src="https://player.vimeo.com/video/${videoId}"
+                            frameborder="0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowfullscreen>
+                    </iframe>
+                `;
+            }
+
+            // Google Drive URLs
+            const gdriveRegex = /(?:https?:\/\/)?(?:www\.)?drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
+            const gdriveMatch = url.match(gdriveRegex);
+            if (gdriveMatch) {
+                const fileId = gdriveMatch[1];
+                return `
+                    <iframe src="https://drive.google.com/file/d/${fileId}/preview"
+                            frameborder="0"
+                            allow="autoplay"
+                            allowfullscreen>
+                    </iframe>
+                `;
+            }
+
+            return null;
+        }
+
+        // Films
+        async function loadFilms() {
+            const cached = getCache('films');
+            if (cached) return displayFilms(cached);
+
+            try {
+                const res = await fetch('films.json');
+                const filmsData = await res.json();
+
+                // Load synopsis for each film
+                const filmsWithSynopsis = await Promise.all(
+                    filmsData.map(async (film) => {
+                        try {
+                            const synopsisRes = await fetch(`synopses/${film.idx}.html`);
+                            const synopsis = await synopsisRes.text();
+                            return { ...film, synopsis };
+                        } catch (e) {
+                            // If synopsis file doesn't exist, return film without synopsis
+                            console.warn(`Could not load synopsis for ${film.idx}`);
+                            return { ...film, synopsis: 'Synopsis not available.' };
+                        }
+                    })
+                );
+
+                setCache('films', filmsWithSynopsis);
+                displayFilms(filmsWithSynopsis);
+            } catch(e) {
+                document.getElementById('films-container').innerHTML = '<div class="error">Films data not available.</div>';
+            }
+        }
+
+        function displayFilms(films) {
+            // Separate films by year (2020 and after vs. before 2020)
+            const recentFilms = films.filter(film => parseInt(film.production_year) >= 2020);
+            const earlierFilms = films.filter(film => parseInt(film.production_year) < 2020);
+
+            // Generate HTML for recent films
+            const recentHtml = recentFilms.map(film => createFilmHTML(film)).join('');
+
+            // Generate HTML for earlier films
+            const earlierHtml = earlierFilms.map(film => createFilmHTML(film)).join('');
+
+            // Create the full HTML structure
+            let html = recentHtml;
+
+            if (earlierFilms.length > 0) {
+                html += `
+                    <div class="earlier-films-toggle" onclick="toggleEarlierFilms()">
+                        <h2>
+                            <span class="toggle-arrow">▶</span>
+                            Earlier Films
+                        </h2>
+                    </div>
+                    <div class="earlier-films" id="earlier-films">
+                        <p style="color: #666; font-style: italic; margin-bottom: 30px; font-size: 16px;">I made these films in my free time during my undergraduate. Go easy!</p>
+                        ${earlierHtml}
+                    </div>
+                `;
+            }
+
+            document.getElementById('films-container').innerHTML = html;
+            films.forEach(film => loadFilmPhotos(film.title));
+        }
+
+        function createFilmHTML(film) {
+            const photoId = `photos-${film.title.replace(/\s+/g, '-').toLowerCase()}`;
+            const videoPlayer = createVideoPlayer(film.url);
+
+            return `
+                <div class="film">
+                    <div class="film-title">${film.title}</div>
+                    <div class="film-year">${film.production_year} • ${film.runtime}</div>
+                    <div class="film-header-content">
+                        <div class="film-info">
+                            <div class="film-credits">
+                                <strong>Director:</strong> ${film.director} • <strong>Writer:</strong> ${film.writer} •
+                                <strong>Cinematographer:</strong> ${film.cinematographer} • <strong>Editor:</strong> ${film.editor} •
+                                <strong>Producer:</strong> ${film.producer}
+                            </div>
+                            <div class="film-text">${film.synopsis}</div>
+                        </div>
+                        <div class="film-photos" id="${photoId}"></div>
+                    </div>
+                    ${videoPlayer || ''}
+                </div>
+            `;
+        }
+
+        function toggleEarlierFilms() {
+            const earlierFilms = document.getElementById('earlier-films');
+            const arrow = document.querySelector('.toggle-arrow');
+
+            if (earlierFilms && arrow) {
+                const isExpanded = earlierFilms.classList.contains('expanded');
+                earlierFilms.classList.toggle('expanded');
+                arrow.classList.toggle('expanded');
+            }
+        }
+        async function loadFilmPhotos(title) {
+            const container = document.getElementById(`photos-${title.replace(/\s+/g, '-').toLowerCase()}`);
+            const folder = title.replace(/\s+/g, '_').toLowerCase();
+            const photos = [];
+
+            const names = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15'];
+            const exts = ['jpg', 'jpeg', 'png'];
+
+            let loadPromises = [];
+
+            for (let name of names) {
+                for (let ext of exts) {
+                    const promise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(`photos/${folder}/${name}.${ext}`);
+                        img.onerror = () => resolve(null);
+                        img.src = `photos/${folder}/${name}.${ext}`;
+                    });
+                    loadPromises.push(promise);
+                }
+            }
+
+            const results = await Promise.all(loadPromises);
+            const validPhotos = results.filter(Boolean);
+
+            if (validPhotos.length > 0) {
+                displayCarousel(container, validPhotos, title);
+            } else {
+                setTimeout(() => {
+                    container.innerHTML = '<div class="error">No photos found</div>';
+                }, 2000);
+            }
+        }
+
+        function displayCarousel(container, photos, title) {
+            const id = container.id + '_carousel';
+
+            if (photos.length === 1) {
+                container.innerHTML = `<div class="photo-carousel"><img src="${photos[0]}" class="film-photo active"></div>`;
+                return;
+            }
+
+            const photosHtml = photos.map((p, i) =>
+                `<img src="${p}" class="film-photo ${i === 0 ? 'active' : ''}">`).join('');
+            const dotsHtml = photos.map((_, i) =>
+                `<span class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide('${id}', ${i})"></span>`).join('');
+
+            container.innerHTML = `
+                <div class="photo-carousel" id="${id}" onmouseenter="pauseAutoPlay('${id}')" onmouseleave="startAutoPlay('${id}')">
+                    ${photosHtml}
+                    <button class="carousel-nav prev" onclick="prevSlide('${id}')">‹</button>
+                    <button class="carousel-nav next" onclick="nextSlide('${id}')">›</button>
+                    <div class="carousel-indicators">${dotsHtml}</div>
+                    <div class="photo-counter"><span id="${id}_counter">1</span> / ${photos.length}</div>
+                </div>
+            `;
+
+            carouselData[id] = { photos, current: 0, interval: null };
+            startAutoPlay(id);
+        }
+
+        function pauseAutoPlay(id) {
+            const data = carouselData[id];
+            if (data && data.interval) {
+                clearInterval(data.interval);
+                data.interval = null;
+            }
+        }
+        function startAutoPlay(id) {
+            const data = carouselData[id];
+            if (!data || data.photos.length <= 1) return;
+
+            clearInterval(data.interval);
+            data.interval = setInterval(() => nextSlide(id, false), 3000);
+        }
+
+        function nextSlide(id, manual = true) {
+            const data = carouselData[id];
+            if (!data) return;
+
+            const newIndex = (data.current + 1) % data.photos.length;
+            goToSlide(id, newIndex, manual);
+        }
+
+        function prevSlide(id) {
+            const data = carouselData[id];
+            if (!data) return;
+
+            const newIndex = (data.current - 1 + data.photos.length) % data.photos.length;
+            goToSlide(id, newIndex, true);
+        }
+
+        function goToSlide(id, index, manual = true) {
+            const data = carouselData[id];
+            const carousel = document.getElementById(id);
+            if (!data || !carousel) return;
+
+            carousel.querySelectorAll('.film-photo').forEach((p, i) => p.classList.toggle('active', i === index));
+            carousel.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === index));
+
+            const counter = document.getElementById(id + '_counter');
+            if (counter) counter.textContent = index + 1;
+
+            data.current = index;
+            if (manual) startAutoPlay(id);
+        }
+
+        // Initialize
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            const sections = ['home', 'academic', 'films'];
+            if (sections.includes(hash)) navigateTo(hash, false);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const id = e.target.getAttribute('href').substring(1);
+                disableScrollNavUpdate = true;
+                navigateTo(id);
+                setTimeout(() => disableScrollNavUpdate = false, 1000);
+            });
+        });
+
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('hashchange', handleHashChange);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (['home', 'academic', 'films'].includes(hash)) {
+                setTimeout(() => navigateTo(hash, false), 10);
+            }
+
+            loadBio();
+            loadPublications();
+            loadFilms();
+        });
+    </script>
 </body>
 </html>
