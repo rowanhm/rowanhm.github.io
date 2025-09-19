@@ -250,17 +250,19 @@
 
         // Bio
         async function loadBio() {
-            const cached = getCache('bio');
-            if (cached) return displayBio(cached);
+            // Hardcoded bio data
+            const bioData = {
+                opening: "Rowan Hall Maudslay is an academic and a filmmaker.",
+                photo: "profile.jpg",
+                orcid_id: "0009-0009-1339-0646"
+            };
 
             try {
-                const [bioRes, academiaRes, filmRes] = await Promise.all([
-                    fetch('bio.json'),
+                const [academiaRes, filmRes] = await Promise.all([
                     fetch('bio/academia.html'),
                     fetch('bio/film.html')
                 ]);
 
-                const bioData = await bioRes.json();
                 const academiaText = await academiaRes.text();
                 const filmText = await filmRes.text();
 
@@ -270,10 +272,10 @@
                     film: filmText
                 };
 
-                setCache('bio', fullBioData);
                 displayBio(fullBioData);
             } catch(e) {
-                document.getElementById('bio-container').innerHTML = '<div class="error">Bio data not available.</div>';
+                // Fallback to just the hardcoded data if HTML files fail
+                displayBio(bioData);
             }
         }
 
@@ -295,9 +297,7 @@
             if (cached) return displayPublications(cached);
 
             try {
-                const bioRes = await fetch('bio.json');
-                const bio = await bioRes.json();
-                const orcidId = bio.orcid_id;
+                const orcidId = "0009-0009-1339-0646";
 
                 if (!orcidId) {
                     container.innerHTML = '<div class="error">Please add ORCID ID to bio.json</div>';
