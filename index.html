@@ -74,38 +74,61 @@
         .film-credits {
             margin-top: 0;
         }
-        .earlier-films-toggle {
-            margin: 60px 0 0 0;
-            padding: 20px 0 10px 0;
-            border-top: 1px solid #eee;
-            cursor: pointer;
-            user-select: none;
-            transition: color 0.3s;
+        .earlier-films-container {
+            position: relative;
+            margin-top: 30px;
         }
-        .earlier-films-toggle:hover {
+
+        .earlier-films-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 600px;
+            background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 30%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 70%, rgba(255,255,255,0.3) 85%, rgba(255,255,255,0) 100%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 150px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .earlier-films-overlay:hover {
+            background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.98) 30%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.65) 70%, rgba(255,255,255,0.35) 85%, rgba(255,255,255,0) 100%);
+        }
+
+        .earlier-films-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+         .earlier-films-text {
+            color: #333;
+            font-size: 16px;
+            font-family: Georgia, serif;
+            font-weight: bold;
+            text-align: center;
+            transition: color 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .earlier-films-text:hover {
             color: #666;
         }
-        .earlier-films-toggle h2 {
-            font-size: 20px;
-            font-weight: normal;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toggle-arrow {
-            transition: transform 0.3s;
-            font-size: 14px;
-        }
-        .toggle-arrow.expanded {
-            transform: rotate(90deg);
-        }
         .earlier-films {
-            display: none;
-            margin-top: 5px;
+            max-height: 400px;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            border-top: 1px solid #eee;
+            padding-top: 40px;
         }
+
         .earlier-films.expanded {
-            display: block;
+            max-height: none;
         }
         .earlier-films .film {
             margin-bottom: 50px;
@@ -115,7 +138,23 @@
         .earlier-films .film:last-child {
             border-bottom: none;
         }
+        .desktop-text {
+            display: inline;
+        }
+
+        .mobile-text {
+            display: none;
+        }
+
+
         @media (max-width: 768px) {
+            .desktop-text {
+                display: none;
+            }
+
+            .mobile-text {
+                display: inline;
+            }
             body { padding: 90px 15px 20px; }
             nav { padding: 15px 0; }
             nav a { margin: 0 15px; font-size: 14px; }
@@ -512,15 +551,16 @@
 
             if (earlierFilms.length > 0) {
                 html += `
-                    <div class="earlier-films-toggle" onclick="toggleEarlierFilms()">
-                        <h2>
-                            <span class="toggle-arrow">▶</span>
-                            Earlier Films
-                        </h2>
-                    </div>
-                    <div class="earlier-films" id="earlier-films">
-                        <p style="color: #666; font-style: italic; margin-bottom: 30px; font-size: 16px;">I made the films below in my free time during my undergraduate. Please keep that in mind!</p>
-                        ${earlierHtml}
+                    <div class="earlier-films-container">
+                        <div class="earlier-films" id="earlier-films">
+                            ${earlierHtml}
+                        </div>
+                        <div class="earlier-films-overlay" id="earlier-films-overlay" onclick="toggleEarlierFilms()">
+                            <div class="earlier-films-text">
+                                <span class="desktop-text">Click to see earlier films, which were made in my free time during my undergraduate.</span>
+                                <span class="mobile-text">Tap to see earlier films, which were made in my free time during my undergraduate.</span>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -557,12 +597,11 @@
 
         function toggleEarlierFilms() {
             const earlierFilms = document.getElementById('earlier-films');
-            const arrow = document.querySelector('.toggle-arrow');
+            const overlay = document.getElementById('earlier-films-overlay');
 
-            if (earlierFilms && arrow) {
-                const isExpanded = earlierFilms.classList.contains('expanded');
-                earlierFilms.classList.toggle('expanded');
-                arrow.classList.toggle('expanded');
+            if (earlierFilms && overlay) {
+                earlierFilms.classList.add('expanded');
+                overlay.classList.add('hidden');
             }
         }
         async function loadFilmPhotos(title) {
