@@ -371,7 +371,7 @@
             });
         }
 
-        function handleScroll() {
+         function handleScroll() {
             const nav = document.querySelector('nav');
             nav.classList.toggle('scrolled', window.scrollY > 50);
 
@@ -381,7 +381,7 @@
                 sections.forEach(section => {
                     if (scrollPos >= section.offsetTop && scrollPos <= section.offsetTop + section.offsetHeight) {
                         updateNav(section.id);
-                        if (history.replaceState) history.replaceState(null, '', '#' + section.id);
+                        // Remove the history.replaceState line that was here
                     }
                 });
             }
@@ -941,6 +941,11 @@
         // Event listeners
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', e => {
+                // Allow default behavior if modifier keys are pressed (Cmd/Ctrl for new tab)
+                if (e.metaKey || e.ctrlKey) {
+                    return; // Let the browser handle opening in new tab
+                }
+
                 e.preventDefault();
                 const id = e.target.getAttribute('href').substring(1);
                 disableScrollNavUpdate = true;
