@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -233,8 +232,7 @@
         </div>
     </div>
 
-    <div class="last-updated">Last Updated: September 18, 2025</div>
-
+    <div class="last-updated">Last Updated: <span id="last-updated-date"></span></div>
     <script>
         const CACHE_DURATION = 1000 * 60 * 30; // 30 min
         const CACHE_PREFIX = 'portfolio_';
@@ -742,6 +740,22 @@
             loadPublications();
             loadFilms();
         });
+
+        // Get repo last updated date from GitHub API
+        async function updateLastModifiedDate() {
+            try {
+                const response = await fetch('https://api.github.com/repos/rowanhm/rowanhm.github.io');
+                const data = await response.json();
+                const lastUpdated = new Date(data.updated_at);
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = lastUpdated.toLocaleDateString('en-US', options);
+                document.getElementById('last-updated-date').textContent = formattedDate;
+            } catch (error) {
+                document.getElementById('last-updated-date').textContent = 'Date unavailable';
+            }
+        }
+
+        updateLastModifiedDate();
     </script>
 </body>
 </html>
