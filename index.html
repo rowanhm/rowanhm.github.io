@@ -872,10 +872,10 @@
                 `<span class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide('${id}', ${i})"></span>`).join('');
 
             container.innerHTML = `
-                <div class="photo-carousel" id="${id}" onmouseenter="pauseAutoPlay('${id}')" onmouseleave="startAutoPlay('${id}')">
-                    ${photosHtml}
-                    <button class="carousel-nav prev" onclick="prevSlide('${id}')">‹</button>
-                    <button class="carousel-nav next" onclick="nextSlide('${id}')">›</button>
+                <div class="photo-carousel" id="${id}">
+                ${photosHtml}
+                    <button class="carousel-nav prev" onclick="prevSlide('${id}')" onmouseenter="pauseAutoPlay('${id}')" onmouseleave="startAutoPlay('${id}')">‹</button>
+                    <button class="carousel-nav next" onclick="nextSlide('${id}')" onmouseenter="pauseAutoPlay('${id}')" onmouseleave="startAutoPlay('${id}')">›</button>
                     <div class="carousel-indicators">${dotsHtml}</div>
                     <div class="photo-counter"><span id="${id}_counter">1</span> / ${photos.length}</div>
                 </div>
