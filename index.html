@@ -18,8 +18,80 @@
         .bio-photo { width: 200px; height: 200px; object-fit: cover; flex-shrink: 0; border-radius: 50%; }
         .bio-text { flex: 1; font-size: 16px; }
         .bio-section.opener { font-size: 20px; font-weight: 500; margin-bottom: 5px; }
-        .publication { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; line-height: 1.3; }
+        /* Filter styles */
+        .filter-container {
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .filter-container.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .filter-label {
+            font-size: 14px;
+            color: #888;
+            font-weight: normal;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .filter-options {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 15px;
+        }
+        .filter-option {
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 0px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            white-space: nowrap;
+        }
+        .filter-option.active {
+            border-bottom-color: #333;
+        }
+        .filter-option.faded {
+            opacity: 0.3;
+        }
+        .filter-option:not(.active):hover {
+            border-bottom-color: transparent;
+        }
+
+        .filter-option.faded:not(.active):hover {
+            opacity: 1;
+            border-bottom-color: transparent;
+        }
+        .publication {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            line-height: 1.3;
+            transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease;
+            overflow: hidden;
+        }
         .publication:last-child { border-bottom: none; }
+        .publication.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+            max-height: 0;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .publication.faded {
+            opacity: 0.3;
+        }
         .publication-title { font-weight: bold; margin-bottom: 8px; cursor: pointer; color: #333; text-decoration: none; }
         .publication-title:hover { text-decoration: underline; }
         .publication-year { color: #666; font-size: 14px; margin-left: 5px; }
@@ -150,7 +222,23 @@
             .desktop-text {
                 display: none;
             }
-
+            .filter-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .filter-options {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+                line-height: .5;
+            }
+            .filter-option {
+                font-size: 14px;
+            }
+            .filter-label {
+                font-size: 14px;
+                text-align: center;
+            }
             .mobile-text {
                 display: inline;
             }
@@ -220,6 +308,16 @@
 
     <div id="academic" class="section">
         <h1>Research Publications</h1>
+        <div class="filter-container" id="filter-container" style="display: none;">
+            <div class="filter-options">
+                <div class="filter-label">Filter by theme:</div>
+                <div class="filter-option" data-keywords="metaphor" onmouseenter="previewFilter(this)" onmouseleave="clearPreview()" onclick="toggleFilter(this)">Metaphor</div>
+                <div class="filter-option" data-keywords="probe,probing" onmouseenter="previewFilter(this)" onmouseleave="clearPreview()" onclick="toggleFilter(this)">Linguistic Capabilities of LLMs</div>
+                <div class="filter-option" data-keywords="gender" onmouseenter="previewFilter(this)" onmouseleave="clearPreview()" onclick="toggleFilter(this)">Gender Bias</div>
+                <div class="filter-option" data-keywords="lexical semantic gaps" onmouseenter="previewFilter(this)" onmouseleave="clearPreview()" onclick="toggleFilter(this)">Language Optimality</div>
+                <div class="filter-option" data-keywords="wordnet" onmouseenter="previewFilter(this)" onmouseleave="clearPreview()" onclick="toggleFilter(this)">WordNet</div>
+            </div>
+        </div>
         <div id="publications-container">
             <div class="loading">Loading publications...</div>
         </div>
@@ -238,6 +336,8 @@
         const CACHE_PREFIX = 'portfolio_';
         let carouselData = {};
         let disableScrollNavUpdate = false;
+        let allPublications = [];
+        let activeFilters = [];
 
         // Cache functions
         function setCache(key, data) {
@@ -328,12 +428,135 @@
             `;
         }
 
+        function toggleFilter(filterOption) {
+            const keywords = filterOption.dataset.keywords.split(',');
+
+            // If this filter is already active, deactivate it (clear all filters)
+            if (filterOption.classList.contains('active')) {
+                filterOption.classList.remove('active');
+                activeFilters = [];
+                // Remove fading from all options
+                document.querySelectorAll('.filter-option').forEach(option => {
+                    option.classList.remove('faded');
+                });
+            } else {
+                // Deactivate all other filters first
+                document.querySelectorAll('.filter-option').forEach(option => {
+                    option.classList.remove('active');
+                    option.classList.remove('faded'); // ADD THIS LINE
+                });
+
+                // Activate this filter
+                filterOption.classList.add('active');
+                activeFilters = [...keywords];
+
+                // Fade out non-active filters
+                document.querySelectorAll('.filter-option').forEach(option => {
+                    if (!option.classList.contains('active')) {
+                        option.classList.add('faded');
+                    }
+                });
+            }
+
+            applyFilters();
+        }
+         function previewFilter(filterOption) {
+            const keywords = filterOption.dataset.keywords.split(',');
+            const publications = document.querySelectorAll('.publication');
+
+            // Fade other filter options (including when hovering over active ones)
+            document.querySelectorAll('.filter-option').forEach(option => {
+                if (option !== filterOption) {
+                    option.classList.add('faded');
+                }
+            });
+
+            // Only preview publications if the hovered option is not active
+            if (!filterOption.classList.contains('active')) {
+                publications.forEach(pub => {
+                    const title = pub.querySelector('.publication-title').textContent.toLowerCase();
+                    const matches = keywords.some(keyword => title.includes(keyword.toLowerCase()));
+
+                    if (!matches) {
+                        pub.classList.add('faded');
+                    }
+                });
+            }
+        }
+         function clearPreview() {
+            // Only clear preview if no filter is currently active
+            const hasActiveFilter = document.querySelector('.filter-option.active');
+
+            if (!hasActiveFilter) {
+                document.querySelectorAll('.filter-option').forEach(option => {
+                    option.classList.remove('faded');
+                });
+            } else {
+                // If there's an active filter, restore the faded state to non-active options
+                // and ensure the active filter is NOT faded
+                document.querySelectorAll('.filter-option').forEach(option => {
+                    if (option.classList.contains('active')) {
+                        option.classList.remove('faded'); // ADD THIS LINE
+                    } else {
+                        option.classList.add('faded');
+                    }
+                });
+            }
+
+            const publications = document.querySelectorAll('.publication');
+            publications.forEach(pub => {
+                pub.classList.remove('faded');
+            });
+        }
+        function applyFilters() {
+            const publications = document.querySelectorAll('.publication');
+            let visiblePublications = [];
+
+            publications.forEach(pub => {
+                const title = pub.querySelector('.publication-title').textContent.toLowerCase();
+                let shouldShow = true;
+
+                if (activeFilters.length > 0) {
+                    shouldShow = activeFilters.some(keyword => title.includes(keyword.toLowerCase()));
+                }
+
+                if (shouldShow) {
+                    pub.classList.remove('hidden');
+                    visiblePublications.push(pub);
+                } else {
+                    pub.classList.add('hidden');
+                }
+            });
+
+            // Remove border from all publications first
+            publications.forEach(pub => {
+                pub.style.borderBottom = '';
+            });
+
+            // Remove border from the last visible publication
+            if (visiblePublications.length > 0) {
+                const lastVisible = visiblePublications[visiblePublications.length - 1];
+                lastVisible.style.borderBottom = 'none';
+            }
+        }
+
+        function showFilters() {
+            const filterContainer = document.getElementById('filter-container');
+            filterContainer.style.display = 'block';
+            setTimeout(() => {
+                filterContainer.classList.add('loaded');
+            }, 100);
+        }
+
         // Publications
         async function loadPublications() {
             const container = document.getElementById('publications-container');
             const cached = getCache('publications');
-            if (cached) return displayPublications(cached);
-
+            if (cached) {
+                displayPublications(cached);
+                showFilters();
+                return;
+            }
             try {
                 const orcidId = "0009-0009-1339-0646";
 
@@ -390,8 +613,10 @@
 
                 progress.style.width = '100%';
                 setCache('publications', publications);
-                setTimeout(() => displayPublications(publications), 200);
-
+                setTimeout(() => {
+                    displayPublications(publications);
+                    showFilters();
+                }, 200);
             } catch(e) {
                 container.innerHTML = '<div class="error">Failed to load publications.</div>';
             }
