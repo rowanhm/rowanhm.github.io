@@ -111,9 +111,9 @@
         }
         .publication-title { font-weight: bold; margin-bottom: 8px; cursor: pointer; color: #333; text-decoration: none; }
         .publication-title:hover { text-decoration: underline; }
-        .publication-year { color: #666; font-size: 14px; margin-left: 5px; }
-        .publication-authors { color: #666; font-size: 14px; margin-left: 8px; }
-        .publication-venue { color: #888; font-style: italic; font-size: 14px; margin-left: 8px; }
+        .publication-year { color: #666; font-size: 14px; }
+        .publication-authors { color: #666; font-size: 14px; }
+        .publication-venue { color: #888; font-style: italic; font-size: 14px; }
          { margin-bottom: 50px; padding-bottom: 40px; border-bottom: 1px solid #eee; }
         .film:last-child { border-bottom: none; }
         .film-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
@@ -159,6 +159,11 @@
         .progress-bar { width: 100%; height: 4px; background: #eee; border-radius: 2px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: #333; width: 0%; transition: width 0.3s; }
         .last-updated { text-align: center; color: #888; font-size: 14px; font-style: italic; margin-top: 0px; padding-top: 20px; }
+        .publication-meta {
+            display: block;
+            margin-top: 6px;
+            margin-left: 18px;
+        }
         .film-credits {
             margin-top: 0;
         }
@@ -353,6 +358,9 @@
         let allPublications = [];
         let activeFilters = [];
 
+        // Add this near the top of your script, after the variable declarations
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
         // Cache functions
         function setCache(key, data) {
             try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({data, timestamp: Date.now()})); } catch(e) {}
@@ -475,6 +483,9 @@
             applyFilters();
         }
         function previewFilter(filterOption) {
+            // Skip hover preview cleanup on touch devices
+            if (isTouchDevice) return;
+
             const keywords = filterOption.dataset.keywords.split(',');
 
             // Fade other filter options
@@ -498,6 +509,9 @@
             });
         }
          function clearPreview() {
+            // Skip hover preview on touch devices
+            if (isTouchDevice) return;
+
             // Restore filter options to their proper state
             const hasActiveFilter = document.querySelector('.filter-option.active');
 
@@ -653,12 +667,14 @@
                     `<span class="publication-title">${pub.title}</span>`;
 
                 return `
-                    <div class="publication">
-                        ${titleEl}
+                <div class="publication">
+                    ${titleEl}
+                    <div class="publication-meta">
                         ${authors ? `<span class="publication-authors">${authors}</span>` : ''}
                         ${pub.year ? `<span class="publication-year">(${pub.year})</span>` : ''}
                         <span class="publication-venue">${pub.venue || ''}</span>
                     </div>
+                </div>
                 `;
             }).join('');
 
