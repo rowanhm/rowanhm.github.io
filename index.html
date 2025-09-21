@@ -497,6 +497,8 @@
 
             // Apply the hovered filter temporarily (hide non-matching publications)
             const publications = document.querySelectorAll('.publication');
+            let visiblePublications = []; // ADD THIS LINE
+
             publications.forEach(pub => {
                 const title = pub.querySelector('.publication-title').textContent.toLowerCase();
                 const matches = keywords.some(keyword => title.includes(keyword.toLowerCase()));
@@ -505,8 +507,21 @@
                     pub.classList.add('hidden');
                 } else {
                     pub.classList.remove('hidden');
+                    visiblePublications.push(pub); // ADD THIS LINE
                 }
             });
+
+            // ADD THESE LINES TO HANDLE BORDERS:
+            // Remove border from all publications first
+            publications.forEach(pub => {
+                pub.style.borderBottom = '';
+            });
+
+            // Remove border from the last visible publication
+            if (visiblePublications.length > 0) {
+                const lastVisible = visiblePublications[visiblePublications.length - 1];
+                lastVisible.style.borderBottom = 'none';
+            }
         }
          function clearPreview() {
             // Skip hover preview on touch devices
