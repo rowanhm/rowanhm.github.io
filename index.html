@@ -32,11 +32,15 @@
         body { font-family: Georgia, serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 100px 20px 40px; }
         a {
             text-decoration: none;
+            color: #0066cc;
+        }
+        a:hover {
+            text-decoration: underline;
         }
         nav { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); padding: 20px 0; text-align: center; z-index: 1000; }
         nav.scrolled { background: rgba(255,255,255,0.98); box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
         nav a { color: #333; text-decoration: none; margin: 0 30px; font-size: 16px; border-bottom: 2px solid transparent; padding-bottom: 2px; transition: border-color 0.3s; }
-        nav a:hover, nav a.active { border-bottom-color: #333; }
+        nav a:hover, nav a.active { border-bottom-color: #333; text-decoration: none;}
         .section { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 2px solid #eee; }
         .section:last-child { border-bottom: none; margin-bottom: 0; }
         h1 { font-size: 28px; margin-bottom: 30px; font-weight: normal; }
@@ -121,6 +125,30 @@
         }
         .publication.faded {
             opacity: 0.3;
+        }
+        .publication-abstract {
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .abstract-label {
+            margin-right: 5px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .abstract-toggle-link {
+            color: #0066cc;
+            font-style: italic;
+            text-decoration: none;
+            cursor: pointer;
+            margin-left: 3px;
+        }
+
+        .abstract-toggle-link:hover {
+            text-decoration: underline;
         }
         .publication-title { font-weight: bold; margin-bottom: 8px; cursor: pointer; color: #333; text-decoration: none; }
         .publication-title:hover { text-decoration: underline; }
@@ -350,7 +378,7 @@
 
     <div class="last-updated">Last Updated: <span id="last-updated-date"></span></div>
     <script>
-        const CACHE_DURATION = 1000 * 60 * 30; // 30 min
+        const CACHE_DURATION = 1; // 1000 * 60 * 30; // 30 min
         const CACHE_PREFIX = 'portfolio_';
         let carouselData = {};
         let disableScrollNavUpdate = false;
@@ -483,6 +511,7 @@
         function previewFilter(filterOption) {
             // Skip hover preview cleanup on touch devices
             if (isTouchDevice) return;
+            resetAllAbstracts();
 
             const keywords = filterOption.dataset.keywords.split(',');
 
@@ -546,6 +575,8 @@
             applyFilters();
         }
         function applyFilters() {
+            resetAllAbstracts();
+
             const publications = document.querySelectorAll('.publication');
             let visiblePublications = [];
 
@@ -639,6 +670,7 @@
                     const venue = d['journal-title']?.value || '';
                     const year = d['publication-date']?.year?.value || '';
                     const contributors = d.contributors;
+                    const abstract = d['short-description'] || '';
 
                     let url = d.url?.value;
                     if (!url && d['external-ids']?.['external-id']) {
@@ -646,7 +678,7 @@
                         if (doi) url = `https://doi.org/${doi['external-id-value']}`;
                     }
 
-                    return { title, venue, year, contributors, url };
+                    return { title, venue, year, contributors, url, abstract };
                 }).sort((a, b) => (b.year || 0) - (a.year || 0));
 
                 progress.style.width = '100%';
@@ -685,6 +717,31 @@
                     `<a href="${pub.url}" class="publication-title" target="_blank">${pub.title}</a>` :
                     `<span class="publication-title">${pub.title}</span>`;
 
+                // Handle abstract description - UPDATED VERSION
+                let abstractHtml = '';
+                if (pub.abstract && pub.abstract.trim()) {
+                    // Create preview by taking first ~160 characters and cutting at word boundary
+                    const maxPreviewLength = 160;
+                    let preview = pub.abstract;
+
+                    if (pub.abstract.length > maxPreviewLength) {
+                        // Find the last space before the character limit
+                        const cutoff = pub.abstract.lastIndexOf(' ', maxPreviewLength);
+                        preview = pub.abstract.substring(0, cutoff > 0 ? cutoff : maxPreviewLength);
+
+                        abstractHtml = `
+                            <div class="publication-abstract">
+                                <span class="abstract-label">Abstract.</span>
+                                <span class="abstract-preview">${preview}... <a href="#" class="abstract-toggle-link" onclick="toggleAbstract(this); return false;">Show More</a></span>
+                                <span class="abstract-full" style="display: none;">${pub.abstract} <a href="#" class="abstract-toggle-link" onclick="toggleAbstract(this); return false;">Show Less</a></span>
+                            </div>
+                        `;
+                    } else {
+                        // Short abstract, show it all
+                        abstractHtml = `<div class="publication-abstract"><span class="abstract-label">Abstract.</span> ${pub.abstract}</div>`;
+                    }
+                }
+
                 return `
                 <div class="publication">
                     ${titleEl}
@@ -692,12 +749,41 @@
                         ${authors ? `<span class="publication-authors">${authors}</span>` : ''}
                         ${pub.year ? `<span class="publication-year">(${pub.year})</span>` : ''}
                         <span class="publication-venue">${pub.venue || ''}</span>
+                        ${abstractHtml}
                     </div>
                 </div>
                 `;
             }).join('');
 
             document.getElementById('publications-container').innerHTML = html;
+        }
+
+        function resetAllAbstracts() {
+            document.querySelectorAll('.publication-abstract').forEach(abstractDiv => {
+                const preview = abstractDiv.querySelector('.abstract-preview');
+                const full = abstractDiv.querySelector('.abstract-full');
+
+                if (preview && full) {
+                    preview.style.display = 'inline';
+                    full.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleAbstract(link) {
+            const abstractDiv = link.closest('.publication-abstract');
+            const preview = abstractDiv.querySelector('.abstract-preview');
+            const full = abstractDiv.querySelector('.abstract-full');
+
+            if (preview.style.display === 'none') {
+                // Currently showing full, switch to preview
+                preview.style.display = 'inline';
+                full.style.display = 'none';
+            } else {
+                // Currently showing preview, switch to full
+                preview.style.display = 'none';
+                full.style.display = 'inline';
+            }
         }
 
         // Video player helper
