@@ -259,10 +259,10 @@
             .film-header-content { grid-template-columns: 1fr; }
             .film-photos { max-width: 100%; }
             h1 { font-size: 24px; }
-.bio-text { text-align: left; }
-.bio-section { display: inline; }
-.bio-section.opener { display: inline-block; width: 100%; text-align: center; font-size: 20px; }
-.bio-section:not(.opener) { text-align: left; }
+            .bio-text { text-align: left; }
+            .bio-section { display: inline; }
+            .bio-section.opener { display: inline-block; width: 100%; text-align: center; font-size: 20px; }
+            .bio-section:not(.opener) { text-align: left; }
             .section { margin-bottom: 60px; padding-bottom: 40px; }
             .film-video.single iframe {
                 width: 100%;
@@ -428,7 +428,6 @@
                 displayBio(bioData);
             }
         }
-
         function displayBio(data) {
             document.getElementById('bio-container').innerHTML = `
                 <img src="${data.photo || 'profile.jpg'}" alt="Profile" class="bio-photo" onerror="this.style.display='none'">
@@ -990,15 +989,21 @@
         window.addEventListener('scroll', handleScroll);
         window.addEventListener('hashchange', handleHashChange);
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const hash = window.location.hash.substring(1);
-            if (['home', 'academic', 'films'].includes(hash)) {
-                setTimeout(() => navigateTo(hash, false), 10);
-            }
 
-            loadBio();
-            loadPublications();
-            loadFilms();
+            // Load all content first
+            await Promise.all([
+                loadBio(),
+                loadPublications(),
+                loadFilms()
+            ]);
+
+            // Then navigate to the hash after content is loaded
+            if (['home', 'academic', 'films'].includes(hash)) {
+                // Give a bit more time for rendering to complete
+                setTimeout(() => navigateTo(hash, false), 100);
+            }
         });
 
         // Get repo last updated date from GitHub API
