@@ -586,14 +586,15 @@
         }
 
         // Publications
-        async function loadPublications() {
+         async function loadPublications() {
             const container = document.getElementById('publications-container');
             const cached = getCache('publications');
             if (cached) {
                 displayPublications(cached);
                 showFilters();
-                return;
+                return; // Return here for cached data
             }
+
             try {
                 const orcidId = "0009-0009-1339-0646";
 
@@ -650,15 +651,20 @@
 
                 progress.style.width = '100%';
                 setCache('publications', publications);
-                setTimeout(() => {
-                    displayPublications(publications);
-                    showFilters();
-                }, 200);
+
+                // Wait for the display and filters to complete
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        displayPublications(publications);
+                        showFilters();
+                        resolve();
+                    }, 200);
+                });
+
             } catch(e) {
                 container.innerHTML = '<div class="error">Failed to load publications.</div>';
             }
         }
-
         function formatAuthors(contributors, myName = "Rowan Hall Maudslay") {
             if (!contributors?.contributor) return '';
 
@@ -998,17 +1004,17 @@
         window.addEventListener('scroll', handleScroll);
         window.addEventListener('hashchange', handleHashChange);
 
-        document.addEventListener('DOMContentLoaded', async () => {
+         document.addEventListener('DOMContentLoaded', async () => {
             const hash = window.location.hash.substring(1);
 
-            // Load all content first
+            // Load all content first, including waiting for ORCID API calls
             await Promise.all([
                 loadBio(),
                 loadPublications(),
                 loadFilms()
             ]);
 
-            // Then navigate to the hash after content is loaded
+            // Then navigate to the hash after ALL content is loaded
             if (['home', 'academic', 'films'].includes(hash)) {
                 // Give a bit more time for rendering to complete
                 setTimeout(() => navigateTo(hash, false), 100);
